@@ -45,13 +45,25 @@ max_move = 500.0
 base_speed = 5.0 #px / iteration
 delay = 10 #time per iteration
 
+
+easel_width = 500
+easel_height = 500
+border = 2
+
+
+def configure(event):
+    global easel_width, easel_height
+    easel_width, easel_height = event.width, event.height
+    print "Adjusted to new width and height %dx%d" %(easel_width, easel_height)
+
 #this is for blanking it
 def resetEasel():
     global easel
     if (easel != None):
         easel.pack_forget()
-    easel = Canvas(mainFrame, width = easel_width, height = easel_height, bg = "#999")
+    easel = Canvas(mainFrame, width = easel_width-border, height = easel_height-border, bg = "#999")
     easel.pack(fill=BOTH, expand=YES)
+    easel.bind("<Configure>", configure)
 
 
 #this takes a reading from the joystick, and draws
@@ -59,7 +71,7 @@ def draw():
     global x, y, delay, base_speed
     newx, newy, newz = (0, 0, 1)
     position = ser.readline().strip().split()
-    print "pos: ", position
+    # print "pos: ", position
     try:
         newx, newy, newz = (float(i) for i in position)
         
@@ -74,8 +86,8 @@ def draw():
         newy = 0
 
     newx, newy, newz = int(newx), int(newy), int(newz)
-    print "(%d, %d, %d)" %(newx, newy, newz)
-    print x, y
+    # print "(%d, %d, %d)" %(newx, newy, newz)
+    # print x, y
     easel.create_line(x, y, x+newx, y+newy)
 
     # x += 1
@@ -97,17 +109,15 @@ def draw():
     root.after(delay, draw)
 
 
-easel_width = 500;
-easel_height = 500;
-
 root = Tk()
 root.title("Etch A Sketch")
 
 mainFrame = Frame(root)
 
 easel = None
+easel = Canvas(mainFrame, width = easel_width, height = easel_height, bg = "#999")
 
-resetEasel()
+easel.bind("<Configure>", configure)
 
 mainFrame.pack(fill=BOTH, expand=YES)
 easel.pack(fill=BOTH, expand=YES)
